@@ -9,6 +9,7 @@ from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User
+from models import Person
 #from models import Person
 
 app = Flask(__name__)
@@ -43,3 +44,52 @@ def handle_hello():
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
+
+@app.route('/person/<int:person_id>', methods=['PUT', 'GET'])
+def get_single_person(person_id):
+    """
+    Single person
+    """
+    body = request.get_json() #{ 'username': 'new_username'}
+    if request.method == 'PUT':
+        user1 = Person.query.get(person_id)
+        if user1 is None:
+            raise APIException('User not found', status_code=404)
+        if "username" in body:
+            user1.username = body["username"]
+        if "email" in body:
+            user1.email = body["email"]
+        db.session.commit()
+    if request.method == 'GET':
+        user1 = Person.query.get(person_id)
+    return jsonify(user1.serialize()), 200
+  
+
+@app.route('/person/', methods=['POST'])
+def post_single_person():
+
+    request_body_user = request.get_json()
+    person1 = Person(username=request_body_user["username"], email=request_body_user["email"])
+    db.session.add(person1)
+    db.session.commit() 
+  
+    return jsonify(request_body_user), 200
+
+
+@app.route('/person/<int:person_id>', methods=['DELETE'])
+def delete_single_person(person_id):
+
+    user1 = Person.query.get(person_id)
+    if user1 is None:
+        raise APIException('User not found', status_code=404)
+    db.session.delete(user1)
+    db.session.commit()    
+        
+    return jsonify(user1.serialize()), 200
+
+@app.route('/person/', methods=['GET'])
+def get_all_person():
+   users=Person.query.all()
+   all_people = list(map(lambda x: x.serialize(), users))
+
+   return jsonify(users.serialize()), 200
