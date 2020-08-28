@@ -10,6 +10,7 @@ from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User
 from models import Person
+from models import Department
 #from models import Person
 
 app = Flask(__name__)
@@ -87,9 +88,18 @@ def delete_single_person(person_id):
         
     return jsonify(user1.serialize()), 200
 
-@app.route('/person/', methods=['GET'])
+@app.route('/persons/', methods=['GET'])
 def get_all_person():
    users=Person.query.all()
    all_people = list(map(lambda x: x.serialize(), users))
+   #print(all_people)
+   return jsonify(all_people), 200
+   
 
-   return jsonify(users.serialize()), 200
+
+@app.route('/departments/', methods=['GET'])
+def get_all_departments():
+   departments=Department.query.all()
+   all_departments = list(map(lambda x: x.serialize(), departments))
+   #print(all_people)
+   return jsonify(all_departments), 200
